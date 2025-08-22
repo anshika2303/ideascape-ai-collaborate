@@ -43,27 +43,48 @@ const tagColors = {
   "Growth": "bg-orange-500"
 };
 
-// API call function
+// API call function  
 const fetchAgents = async (): Promise<Agent[]> => {
   try {
-    console.log('Attempting to fetch agents from API...');
-    const response = await fetch('http://demo2018916.mockable.io/api/agents', {
-      headers: {
-        'accept': '*/*'
-      }
-    });
+    console.log('🔄 Attempting to fetch agents from API...');
     
-    console.log('API Response status:', response.status);
+    // Try HTTPS first, then HTTP as fallback
+    let response;
+    try {
+      response = await fetch('https://demo2018916.mockable.io/api/agents', {
+        headers: { 'accept': '*/*' },
+        mode: 'cors'
+      });
+    } catch (httpsError) {
+      console.log('❌ HTTPS failed, trying HTTP:', httpsError);
+      response = await fetch('http://demo2018916.mockable.io/api/agents', {
+        headers: { 'accept': '*/*' },
+        mode: 'cors'
+      });
+    }
+    
+    console.log('✅ API Response status:', response.status);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
-    console.log('API Response data:', data);
-    return Array.isArray(data) ? data : [data];
+    console.log('📊 API Response data:', data);
+    
+    if (Array.isArray(data)) {
+      console.log(`🎯 Found ${data.length} agents`);
+      return data;
+    } else if (data && typeof data === 'object') {
+      console.log('📦 Single agent returned, wrapping in array');
+      return [data];
+    } else {
+      console.warn('⚠️ Unexpected data format:', typeof data);
+      return [];
+    }
   } catch (error) {
-    console.error('Failed to fetch agents:', error);
+    console.error('💥 Failed to fetch agents:', error);
+    console.error('🔧 This might be a CORS issue. The API may need to allow cross-origin requests.');
     return [];
   }
 };
@@ -224,6 +245,11 @@ export function NavigationSidebar({
             </h3>
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading agents...</div>
+            ) : agents.length === 0 ? (
+              <div className="text-sm text-muted-foreground">
+                <p>No agents available.</p>
+                <p className="text-xs mt-1">Check console for API errors.</p>
+              </div>
             ) : (
               <div className="space-y-3">
                 {Object.entries(agentsByTag).map(([tag, tagAgents]) => (
