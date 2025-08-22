@@ -55,7 +55,7 @@ const fetchAgents = async (): Promise<Agent[]> => {
       functionalPrompt: "Technology leader specializing in full-stack architecture",
       modulePrompt: "Expert in designing distributed systems",
       softSkills: "Collaborative, clear communicator",
-      displayName: "Rishi Gupta",
+      displayName: "Rishi G",
       avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOGZpFZKQVdkcFBqhV0apckEr6CQk4s6bB_Q&s",
       tag: "Technology"
     }
