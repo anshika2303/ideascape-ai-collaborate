@@ -134,14 +134,16 @@ export function ChatArea({ roomId, topic }: ChatAreaProps) {
       )}
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-4">
-          {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="p-6 space-y-4">
+            {messages.map((msg) => (
+              <MessageBubble key={msg.id} message={msg} />
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+      </div>
 
       {/* Input Area */}
       <div className="border-t border-border bg-background p-4">

@@ -174,8 +174,9 @@ export function CollaborationSidebar({
               onDragOver={handleDragOver}
               className="min-h-[100px] p-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
             >
-              <div className="space-y-2">
-                {participants.map((participant) => (
+              <ScrollArea className="max-h-64">
+                <div className="space-y-2 pr-2">
+                  {participants.map((participant) => (
                   <div
                     key={participant.id}
                     className="group flex items-center gap-3 p-2 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors"
@@ -233,20 +234,21 @@ export function CollaborationSidebar({
                       )}
                     </div>
                   </div>
-                ))}
-                
-                {participants.length === 0 && (
-                  <div className="text-center py-6">
-                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Drag AI agents from the left panel
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Build your dream team!
-                    </p>
-                  </div>
-                )}
-              </div>
+                  ))}
+                  
+                  {participants.length === 0 && (
+                    <div className="text-center py-6">
+                      <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag AI agents from the left panel
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Build your dream team!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
             </div>
           </div>
 
