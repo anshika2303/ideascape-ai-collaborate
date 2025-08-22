@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Users, GripVertical, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,6 +12,19 @@ interface Bot {
   description?: string;
 }
 
+interface Agent {
+  id: string;
+  role: "MODERATOR" | "COMPANION" | "EXPERT" | "VISIONARY" | "CELEBRITY" | "CRITIC" | "CHEERLEADER";
+  description: string;
+  designation: string;
+  functionalPrompt: string;
+  modulePrompt: string;
+  softSkills: string;
+  displayName: string;
+  avatarUrl: string;
+  tag: "Technology" | "Product" | "Marketing" | "Sales" | "Growth";
+}
+
 interface NavigationSidebarProps {
   activeRoom: string;
   onRoomChange: (room: string) => void;
@@ -21,89 +34,36 @@ interface NavigationSidebarProps {
   onAddParticipant: (bot: Bot) => void;
 }
 
-// Available departments and their bots
-const departments = {
-  "Tech": {
-    name: "Technology",
-    color: "bg-blue-500",
-    bots: [
-      { id: "tech-1", name: "Rishi", role: "Tech Head", description: "Full-stack architecture expert" },
-      { id: "tech-2", name: "DevBot", role: "Senior Developer", description: "Code optimization specialist" },
-      { id: "tech-3", name: "QABot", role: "Quality Engineer", description: "Testing and quality assurance" }
-    ]
-  },
-  "Product": {
-    name: "Product Management", 
-    color: "bg-purple-500",
-    bots: [
-      { id: "product-1", name: "ProductBot", role: "Product Manager", description: "Feature prioritization expert" },
-      { id: "product-2", name: "UXBot", role: "UX Designer", description: "User experience specialist" },
-      { id: "product-3", name: "ResearchBot", role: "User Research", description: "Market analysis expert" }
-    ]
-  },
-  "Marketing": {
-    name: "Marketing",
-    color: "bg-green-500", 
-    bots: [
-      { id: "marketing-1", name: "Himani", role: "Marketing Head", description: "Growth strategy expert" },
-      { id: "marketing-2", name: "ContentBot", role: "Content Specialist", description: "Brand storytelling expert" },
-      { id: "marketing-3", name: "SEOBot", role: "SEO Expert", description: "Search optimization specialist" }
-    ]
-  },
-  "Growth": {
-    name: "Growth",
-    color: "bg-orange-500",
-    bots: [
-      { id: "growth-1", name: "GrowthBot", role: "Growth Strategist", description: "User acquisition and growth expert" },
-      { id: "growth-2", name: "AcquisitionBot", role: "Growth Hacker", description: "User acquisition expert" },
-      { id: "growth-3", name: "AnalyticsBot", role: "Data Analyst", description: "Performance metrics expert" },
-      { id: "growth-4", name: "ConversionBot", role: "CRO Specialist", description: "Conversion optimization" }
-    ]
-  },
-  "Sales": {
-    name: "Sales",
-    color: "bg-red-500",
-    bots: [
-      { id: "sales-1", name: "Kumar", role: "Sales Agent", description: "Deal closing expert" },
-      { id: "sales-2", name: "CRMBot", role: "Sales Manager", description: "Pipeline management expert" },
-      { id: "sales-3", name: "LeadBot", role: "Lead Qualifier", description: "Prospect qualification" }
-    ]
-  },
-  "Service": {
-    name: "Customer Service",
-    color: "bg-cyan-500",
-    bots: [
-      { id: "service-1", name: "SupportBot", role: "Support Manager", description: "Customer satisfaction expert" },
-      { id: "service-2", name: "ChatBot", role: "Chat Support", description: "Real-time assistance" },
-      { id: "service-3", name: "RetentionBot", role: "Success Manager", description: "Customer retention expert" }
-    ]
-  },
-  "Finance": {
-    name: "Finance",
-    color: "bg-yellow-500",
-    bots: [
-      { id: "finance-1", name: "FinanceBot", role: "CFO", description: "Financial planning expert" },
-      { id: "finance-2", name: "BudgetBot", role: "Budget Analyst", description: "Cost optimization specialist" },
-      { id: "finance-3", name: "RevenueBot", role: "Revenue Analyst", description: "Revenue forecasting expert" }
-    ]
-  },
-  "Legal": {
-    name: "Legal",
-    color: "bg-indigo-500",
-    bots: [
-      { id: "legal-1", name: "LegalBot", role: "Legal Counsel", description: "Compliance expert" },
-      { id: "legal-2", name: "ContractBot", role: "Contract Specialist", description: "Agreement drafting expert" },
-      { id: "legal-3", name: "ComplianceBot", role: "Compliance Officer", description: "Regulatory compliance" }
-    ]
-  },
-  "Business": {
-    name: "Business Heads",
-    color: "bg-rose-500",
-    bots: [
-      { id: "business-1", name: "Rohan Mathur", role: "Business Head", description: "Jeevansathi leadership expert" },
-      { id: "business-2", name: "Hitesh Oberoi", role: "CEO", description: "InfoEdge strategic vision" }
-    ]
+// Mock API function for fetching agents
+const mockApiAgents: Agent[] = [
+  {
+    id: "68a8524016894d320381d91a",
+    role: "EXPERT",
+    description: "Full stack tech architecture expert",
+    designation: "Tech Head",
+    functionalPrompt: "Technology leader specializing in full-stack architecture, microservices, cloud platforms, and system scalability. Guides teams in building robust, efficient, and secure systems.",
+    modulePrompt: "Expert in designing distributed systems, optimizing backend services, implementing DevOps pipelines, and advising on emerging technologies like AI integration and blockchain use cases.",
+    softSkills: "Collaborative, clear communicator, mentorship-oriented, problem-solving mindset, ability to balance innovation with practicality.",
+    displayName: "Rishi Gupta",
+    avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOGZpFZKQVdkcFBqhV0apckEr6CQk4s6bB_Q&s",
+    tag: "Technology"
   }
+];
+
+// Tag colors mapping
+const tagColors = {
+  "Technology": "bg-blue-500",
+  "Product": "bg-purple-500",
+  "Marketing": "bg-green-500",
+  "Sales": "bg-red-500",
+  "Growth": "bg-orange-500"
+};
+
+// Mock API call function
+const fetchAgents = async (): Promise<Agent[]> => {
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return mockApiAgents;
 };
 
 const rooms = [
@@ -120,33 +80,61 @@ export function NavigationSidebar({
   participants,
   onAddParticipant 
 }: NavigationSidebarProps) {
-  const [expandedDepartments, setExpandedDepartments] = useState<string[]>(["Tech"]);
-  const [editingBots, setEditingBots] = useState<{[key: string]: {name: string, description: string}}>({});
+  const [expandedTags, setExpandedTags] = useState<string[]>(["Technology"]);
+  const [editingAgents, setEditingAgents] = useState<{[key: string]: {displayName: string, description: string}}>({});
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const toggleDepartment = (dept: string) => {
-    setExpandedDepartments(prev => 
-      prev.includes(dept) 
-        ? prev.filter(d => d !== dept)
-        : [...prev, dept]
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        setLoading(true);
+        const agentData = await fetchAgents();
+        setAgents(agentData);
+      } catch (error) {
+        console.error('Failed to fetch agents:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAgents();
+  }, []);
+
+  // Group agents by tag
+  const agentsByTag = agents.reduce((acc, agent) => {
+    if (!acc[agent.tag]) {
+      acc[agent.tag] = [];
+    }
+    acc[agent.tag].push(agent);
+    return acc;
+  }, {} as Record<string, Agent[]>);
+
+  const toggleTag = (tag: string) => {
+    setExpandedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
     );
   };
 
-  const handleEditBot = (botId: string, field: 'name' | 'description', value: string) => {
-    setEditingBots(prev => ({
+  const handleEditAgent = (agentId: string, field: 'displayName' | 'description', value: string) => {
+    setEditingAgents(prev => ({
       ...prev,
-      [botId]: {
-        ...prev[botId],
+      [agentId]: {
+        ...prev[agentId],
         [field]: value
       }
     }));
   };
 
-  const handleDragStart = (e: React.DragEvent, bot: any, department: string) => {
-    const botData = {
-      ...bot,
-      department,
-      name: editingBots[bot.id]?.name || bot.name,
-      description: editingBots[bot.id]?.description || bot.description
+  const handleDragStart = (e: React.DragEvent, agent: Agent) => {
+    const botData: Bot = {
+      id: agent.id,
+      name: editingAgents[agent.id]?.displayName || agent.displayName,
+      role: agent.designation,
+      department: agent.tag,
+      description: editingAgents[agent.id]?.description || agent.description
     };
     e.dataTransfer.setData('application/json', JSON.stringify(botData));
   };
@@ -226,69 +214,73 @@ export function NavigationSidebar({
             </div>
           </div>
 
-          {/* Available Bots by Department */}
+          {/* Available AI Agents */}
           <div>
             <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
               Available AI Agents
             </h3>
-            <div className="space-y-3">
-              {Object.entries(departments).map(([deptKey, dept]) => (
-                <div key={deptKey} className="space-y-2">
-                  <button
-                    onClick={() => toggleDepartment(deptKey)}
-                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left"
-                  >
-                    <div className={cn("h-3 w-3 rounded-sm", dept.color)} />
-                    <span className="text-sm font-medium text-sidebar-foreground flex-1">
-                      {dept.name}
-                    </span>
-                    <ChevronDown className={cn(
-                      "h-3 w-3 text-muted-foreground transition-transform",
-                      expandedDepartments.includes(deptKey) && "rotate-180"
-                    )} />
-                  </button>
-                  
-                  {expandedDepartments.includes(deptKey) && (
-                    <div className="ml-4 space-y-2">
-                      {dept.bots.map((bot) => (
-                        <div
-                          key={bot.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, bot, deptKey)}
-                          className="group flex items-start gap-3 p-3 rounded-lg border border-sidebar-border hover:border-primary/50 bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm"
-                        >
-                          <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary" />
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <input
-                              type="text"
-                              value={editingBots[bot.id]?.name || bot.name}
-                              onChange={(e) => handleEditBot(bot.id, 'name', e.target.value)}
-                              className="w-full text-sm font-medium bg-transparent border-none outline-none text-card-foreground hover:bg-muted/50 rounded px-1 py-0.5"
-                              placeholder="Bot name"
-                            />
-                            <input
-                              type="text"
-                              value={editingBots[bot.id]?.description || bot.description}
-                              onChange={(e) => handleEditBot(bot.id, 'description', e.target.value)}
-                              className="w-full text-xs text-muted-foreground bg-transparent border-none outline-none hover:bg-muted/50 rounded px-1 py-0.5"
-                              placeholder="Bot description"
-                            />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                {bot.role}
-                              </span>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                {deptKey}
-                              </span>
+            {loading ? (
+              <div className="text-sm text-muted-foreground">Loading agents...</div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(agentsByTag).map(([tag, tagAgents]) => (
+                  <div key={tag} className="space-y-2">
+                    <button
+                      onClick={() => toggleTag(tag)}
+                      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left"
+                    >
+                      <div className={cn("h-3 w-3 rounded-sm", tagColors[tag as keyof typeof tagColors])} />
+                      <span className="text-sm font-medium text-sidebar-foreground flex-1">
+                        {tag}
+                      </span>
+                      <ChevronDown className={cn(
+                        "h-3 w-3 text-muted-foreground transition-transform",
+                        expandedTags.includes(tag) && "rotate-180"
+                      )} />
+                    </button>
+                    
+                    {expandedTags.includes(tag) && (
+                      <div className="ml-4 space-y-2">
+                        {tagAgents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, agent)}
+                            className="group flex items-start gap-3 p-3 rounded-lg border border-sidebar-border hover:border-primary/50 bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm"
+                          >
+                            <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary" />
+                            <div className="flex-1 min-w-0 space-y-2">
+                              <input
+                                type="text"
+                                value={editingAgents[agent.id]?.displayName || agent.displayName}
+                                onChange={(e) => handleEditAgent(agent.id, 'displayName', e.target.value)}
+                                className="w-full text-sm font-medium bg-transparent border-none outline-none text-card-foreground hover:bg-muted/50 rounded px-1 py-0.5"
+                                placeholder="Agent name"
+                              />
+                              <input
+                                type="text"
+                                value={editingAgents[agent.id]?.description || agent.description}
+                                onChange={(e) => handleEditAgent(agent.id, 'description', e.target.value)}
+                                className="w-full text-xs text-muted-foreground bg-transparent border-none outline-none hover:bg-muted/50 rounded px-1 py-0.5"
+                                placeholder="Agent description"
+                              />
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                  {agent.designation}
+                                </span>
+                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+                                  {agent.role}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Rooms */}
