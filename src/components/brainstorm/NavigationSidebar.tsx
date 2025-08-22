@@ -317,21 +317,6 @@ export function NavigationSidebar({
         </div>
       </ScrollArea>
 
-      {/* User Profile Section */}
-      <div className="p-4 border-t border-sidebar-border bg-sidebar">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
-              A
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-sidebar rounded-full"></div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-sm text-sidebar-foreground truncate">Anshika</p>
-            <p className="text-xs text-muted-foreground">Host</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
