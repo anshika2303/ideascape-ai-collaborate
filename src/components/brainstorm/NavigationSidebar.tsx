@@ -54,8 +54,8 @@ const departments = {
     name: "Growth",
     color: "bg-orange-500",
     bots: [
-      { id: "growth-1", name: "Anshika", role: "Growth Strategist", description: "User acquisition and growth expert" },
-      { id: "growth-2", name: "GrowthBot", role: "Growth Hacker", description: "User acquisition expert" },
+      { id: "growth-1", name: "GrowthBot", role: "Growth Strategist", description: "User acquisition and growth expert" },
+      { id: "growth-2", name: "AcquisitionBot", role: "Growth Hacker", description: "User acquisition expert" },
       { id: "growth-3", name: "AnalyticsBot", role: "Data Analyst", description: "Performance metrics expert" },
       { id: "growth-4", name: "ConversionBot", role: "CRO Specialist", description: "Conversion optimization" }
     ]
