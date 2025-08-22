@@ -43,24 +43,45 @@ const tagColors = {
   "Growth": "bg-orange-500"
 };
 
-// API call function
+// API call function with fallback
 const fetchAgents = async (): Promise<Agent[]> => {
+  // Fallback mock data
+  const fallbackAgents: Agent[] = [
+    {
+      id: "68a8524016894d320381d91a",
+      role: "EXPERT",
+      description: "Full stack tech architecture expert",
+      designation: "Tech Head",
+      functionalPrompt: "Technology leader specializing in full-stack architecture",
+      modulePrompt: "Expert in designing distributed systems",
+      softSkills: "Collaborative, clear communicator",
+      displayName: "Rishi Gupta",
+      avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOGZpFZKQVdkcFBqhV0apckEr6CQk4s6bB_Q&s",
+      tag: "Technology"
+    }
+  ];
+
   try {
+    console.log('Attempting to fetch agents from API...');
     const response = await fetch('http://demo2018916.mockable.io/api/agents', {
       headers: {
         'accept': '*/*'
       }
     });
     
+    console.log('API Response status:', response.status);
+    
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     
     const data = await response.json();
+    console.log('API Response data:', data);
     return Array.isArray(data) ? data : [data];
   } catch (error) {
-    console.error('Failed to fetch agents:', error);
-    return [];
+    console.error('Failed to fetch agents, using fallback:', error);
+    // Return fallback data if API fails
+    return fallbackAgents;
   }
 };
 
