@@ -1,45 +1,41 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Paperclip, Smile, AtSign, User } from "lucide-react";
+import { Send, Paperclip, Smile, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageBubble } from "./MessageBubble";
 import { cn } from "@/lib/utils";
-import { useDiscussion, type UIMessage } from "@/hooks/useDiscussion";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface ChatAreaProps {
   roomId: string;
   topic?: string;
-  discussionId?: string;
 }
 
-// Fallback mock messages data (used when API fails or no discussionId provided)
-const mockMessages: UIMessage[] = [
+// Mock messages data
+const mockMessages = [
   {
     id: "1",
-    type: "human",
-    author: "Anshika",
-    avatar: "AN",
+    type: "human" as const,
+    author: "Sarah Chen",
+    avatar: "SC",
     content: "Hey everyone! I've been thinking about our user onboarding flow. What if we made it more interactive?",
     timestamp: "10:30 AM",
     reactions: [{ emoji: "👍", count: 3 }, { emoji: "💡", count: 1 }],
   },
   {
     id: "2", 
-    type: "ai",
+    type: "ai" as const,
     author: "AI Expert",
     avatar: "EX",
-    role: "expert",
-    content: "That's a great direction, Anshika! Interactive onboarding can increase completion rates by up to 40%. I'd suggest starting with progressive disclosure - show users one feature at a time with hands-on tasks.",
+    role: "expert" as const,
+    content: "That's a great direction, Sarah! Interactive onboarding can increase completion rates by up to 40%. I'd suggest starting with progressive disclosure - show users one feature at a time with hands-on tasks.",
     timestamp: "10:32 AM",
     reactions: [{ emoji: "🎯", count: 2 }],
   },
   {
     id: "3",
-    type: "human", 
-    author: "Akash",
+    type: "human" as const, 
+    author: "Mike Rodriguez",
     avatar: "MR",
     content: "Love the progressive disclosure idea! We could also add gamification elements - maybe a progress bar or achievement badges?",
     timestamp: "10:34 AM",
@@ -47,41 +43,31 @@ const mockMessages: UIMessage[] = [
   },
   {
     id: "4",
-    type: "ai",
+    type: "ai" as const,
     author: "AI Moderator", 
     avatar: "MOD",
-    role: "moderator",
+    role: "moderator" as const,
     content: "Excellent ideas flowing! Let me summarize what we have so far:\n\n• Interactive onboarding flow\n• Progressive disclosure approach\n• Gamification with progress tracking\n\nShall we dive deeper into any of these concepts?",
     timestamp: "10:36 AM",
     reactions: [{ emoji: "📝", count: 2 }],
   },
   {
     id: "5",
-    type: "ai",
+    type: "ai" as const,
     author: "AI Companion",
     avatar: "COM", 
-    role: "companion",
+    role: "companion" as const,
     content: "I love the energy in this discussion! 🌟 These ideas could really make the user experience delightful. What do you think about adding some micro-animations to make the onboarding feel more alive?",
     timestamp: "10:38 AM",
     reactions: [{ emoji: "✨", count: 5 }],
   },
 ];
 
-export function ChatArea({ roomId, topic, discussionId = "68a8b4104f19bb16649cdfb9" }: ChatAreaProps) {
+export function ChatArea({ roomId, topic }: ChatAreaProps) {
   const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState(mockMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  
-  // Use our custom hook to fetch and manage discussion data
-  const { 
-    discussion, 
-    messages, 
-    isLoading, 
-    error, 
-    sendMessage: sendMessageToDiscussion,
-    userId,
-    setUserId
-  } = useDiscussion(discussionId, mockMessages);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -93,10 +79,34 @@ export function ChatArea({ roomId, topic, discussionId = "68a8b4104f19bb16649cdf
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
-    
-    // Use the sendMessage function from our custom hook
-    sendMessageToDiscussion(message.trim());
+
+    const newMessage = {
+      id: Date.now().toString(),
+      type: "human" as const,
+      author: "You",
+      avatar: "You",
+      content: message.trim(),
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      reactions: [],
+    };
+
+    setMessages(prev => [...prev, newMessage]);
     setMessage("");
+    
+    // Simulate AI response after a delay
+    setTimeout(() => {
+      const aiResponse = {
+        id: (Date.now() + 1).toString(),
+        type: "ai" as const,
+        author: "AI Companion",
+        avatar: "COM",
+        role: "companion" as const,
+        content: "That's an interesting perspective! Let me think about that and get back to you with some insights.",
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        reactions: [],
+      };
+      setMessages(prev => [...prev, aiResponse]);
+    }, 1500);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -106,116 +116,72 @@ export function ChatArea({ roomId, topic, discussionId = "68a8b4104f19bb16649cdf
     }
   };
 
-  const handleDropParticipant = (e: React.DragEvent) => {
-    e.preventDefault();
-    try {
-      const botData = JSON.parse(e.dataTransfer.getData('application/json'));
-      if (botData && !messages.find(m => m.author === botData.name)) {
-        // Add bot to participants through custom event
-        window.dispatchEvent(new CustomEvent('addParticipant', { detail: botData }));
-      }
-    } catch (error) {
-      console.error('Error parsing dropped data:', error);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
-
   return (
     <div className="flex-1 flex flex-col">
       {/* Topic Header */}
-      {(topic || discussion?.title) && (
+      {topic && (
         <div className="border-b border-border bg-card px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
             <h2 className="text-lg font-semibold text-foreground">
-              {discussion?.title || topic}
+              {topic}
             </h2>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {discussion?.description || "Active brainstorming session"} • {messages.length} messages
+            Active brainstorming session • {messages.length} messages
           </p>
         </div>
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4" style={{ scrollbarWidth: "thin" }} type="always">
-          <div className="p-6 space-y-4">
-            {isLoading ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-pulse text-muted-foreground">Loading messages...</div>
-              </div>
-            ) : error ? (
-              <div className="flex justify-center py-8">
-                <div className="text-destructive">Error loading messages. Please try again.</div>
-              </div>
-            ) : messages.length > 0 ? (
-              messages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))
-            ) : (
-              <div className="flex justify-center py-8">
-                <div className="text-muted-foreground">No messages yet. Start the conversation!</div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-6 space-y-4">
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
       {/* Input Area */}
-      <div className="flex items-center gap-2 p-4 border-t border-border bg-card">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-muted-foreground relative">
-              <User className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground rounded-full text-xs w-4 h-4 flex items-center justify-center">
-                {userId.slice(-1)}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80">
-            <div className="space-y-2">
-              <h4 className="font-medium">User ID</h4>
-              <p className="text-sm text-muted-foreground">Change your user ID for this conversation</p>
-              <div className="flex gap-2">
-                <Input 
-                  value={userId} 
-                  onChange={(e) => setUserId(e.target.value)} 
-                  placeholder="Enter user ID"
-                />
+      <div className="border-t border-border bg-background p-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative flex items-end gap-3">
+            <div className="flex-1 relative">
+              <Textarea
+                ref={textareaRef}
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Share your ideas... (Press Enter to send, Shift+Enter for new line)"
+                className="resize-none min-h-[44px] max-h-32 pr-12 bg-card border-border"
+                rows={1}
+              />
+              <div className="absolute right-3 bottom-3 flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Paperclip className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <Smile className="h-4 w-4 text-muted-foreground" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6">
+                  <AtSign className="h-4 w-4 text-muted-foreground" />
+                </Button>
               </div>
             </div>
-          </PopoverContent>
-        </Popover>
-        <Button variant="ghost" size="icon" className="text-muted-foreground">
-          <Paperclip className="h-5 w-5" />
-        </Button>
-        <div className="flex-1 relative">
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Type your message..."
-            className="min-h-10 resize-none py-3 pr-12 pl-3"
-            rows={1}
-          />
-          <div className="absolute right-3 top-3 flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground">
-              <AtSign className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground">
-              <Smile className="h-4 w-4" />
+            <Button 
+              onClick={handleSendMessage}
+              disabled={!message.trim()}
+              size="icon"
+              className="h-11 w-11 rounded-lg"
+            >
+              <Send className="h-4 w-4" />
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground mt-2 ml-1">
+            AI companions are ready to help brainstorm, moderate, and provide expertise
+          </p>
         </div>
-        <Button onClick={handleSendMessage} disabled={!message.trim()} size="icon">
-          <Send className="h-5 w-5" />
-        </Button>
       </div>
     </div>
   );

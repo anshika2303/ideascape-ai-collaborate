@@ -9,10 +9,9 @@ export function BrainstormLayout() {
   const [activeRoom, setActiveRoom] = useState("general");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Product Roadmap Q1 2024 - Feature Prioritization");
-  const [discussionId, setDiscussionId] = useState("68a8b4104f19bb16649cdfb9"); // Default discussion ID
   const [participants, setParticipants] = useState([
-    { id: "2", name: "Akash", role: "human", department: "Tech", description: "Human participant" },
-    { id: "1", name: "Anshika", role: "human", department: "Growth", description: "Human participant"}
+    { id: "1", name: "Sarah Chen", role: "human", department: "Product" },
+    { id: "2", name: "Mike Rodriguez", role: "human", department: "Tech" },
   ]);
 
   // Listen for drag-and-drop events
@@ -58,7 +57,7 @@ export function BrainstormLayout() {
           </div>
         </header>
 
-        <ChatArea roomId={activeRoom} topic={currentTopic} discussionId={discussionId} />
+        <ChatArea roomId={activeRoom} topic={currentTopic} />
       </div>
 
       {/* Right Collaboration Sidebar */}
