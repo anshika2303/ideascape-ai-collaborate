@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Users, GripVertical, ChevronDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Plus, X, Users, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface Bot {
@@ -9,7 +10,20 @@ interface Bot {
   name: string;
   role: string;
   department: string;
-  description?: string;
+  description: string;
+}
+
+interface Agent {
+  id: string;
+  role: string;
+  description: string;
+  designation: string;
+  functionalPrompt: string;
+  modulePrompt: string;
+  softSkills: string;
+  displayName: string;
+  avatarUrl: string;
+  tag: string;
 }
 
 interface NavigationSidebarProps {
@@ -21,79 +35,136 @@ interface NavigationSidebarProps {
   onAddParticipant: (bot: Bot) => void;
 }
 
-// Available departments and their bots
-const departments = {
-  "Tech": {
-    name: "Technology",
-    color: "bg-blue-500",
-    bots: [
-      { id: "tech-1", name: "Rishi", role: "Tech Head", description: "Full-stack architecture expert" },
-      { id: "tech-2", name: "DevBot", role: "Senior Developer", description: "Code optimization specialist" },
-      { id: "tech-3", name: "QABot", role: "Quality Engineer", description: "Testing and quality assurance" }
-    ]
-  },
-  "Product": {
-    name: "Product Management", 
-    color: "bg-purple-500",
-    bots: [
-      { id: "product-1", name: "ProductBot", role: "Product Manager", description: "Feature prioritization expert" },
-      { id: "product-2", name: "UXBot", role: "UX Designer", description: "User experience specialist" },
-      { id: "product-3", name: "ResearchBot", role: "User Research", description: "Market analysis expert" }
-    ]
-  },
-  "Marketing": {
-    name: "Marketing",
-    color: "bg-green-500", 
-    bots: [
-      { id: "marketing-1", name: "Himani", role: "Marketing Head", description: "Growth strategy expert" },
-      { id: "marketing-2", name: "ContentBot", role: "Content Specialist", description: "Brand storytelling expert" },
-      { id: "marketing-3", name: "SEOBot", role: "SEO Expert", description: "Search optimization specialist" }
-    ]
-  },
-  "Growth": {
-    name: "Growth",
-    color: "bg-orange-500",
-    bots: [
-      { id: "growth-1", name: "GrowthBot", role: "Growth Hacker", description: "User acquisition expert" },
-      { id: "growth-2", name: "AnalyticsBot", role: "Data Analyst", description: "Performance metrics expert" },
-      { id: "growth-3", name: "ConversionBot", role: "CRO Specialist", description: "Conversion optimization" }
-    ]
-  },
-  "Sales": {
-    name: "Sales",
-    color: "bg-red-500",
-    bots: [
-      { id: "sales-1", name: "Kumar", role: "Sales Agent", description: "Deal closing expert" },
-      { id: "sales-2", name: "CRMBot", role: "Sales Manager", description: "Pipeline management expert" },
-      { id: "sales-3", name: "LeadBot", role: "Lead Qualifier", description: "Prospect qualification" }
-    ]
-  },
-  "Service": {
-    name: "Customer Service",
-    color: "bg-cyan-500",
-    bots: [
-      { id: "service-1", name: "SupportBot", role: "Support Manager", description: "Customer satisfaction expert" },
-      { id: "service-2", name: "ChatBot", role: "Chat Support", description: "Real-time assistance" },
-      { id: "service-3", name: "RetentionBot", role: "Success Manager", description: "Customer retention expert" }
-    ]
-  },
-  "Finance": {
-    name: "Finance",
-    color: "bg-yellow-500",
-    bots: [
-      { id: "finance-1", name: "FinanceBot", role: "CFO", description: "Financial planning expert" },
-      { id: "finance-2", name: "BudgetBot", role: "Budget Analyst", description: "Cost optimization specialist" },
-      { id: "finance-3", name: "RevenueBot", role: "Revenue Analyst", description: "Revenue forecasting expert" }
-    ]
-  },
-  "Legal": {
-    name: "Legal",
-    color: "bg-indigo-500",
-    bots: [
-      { id: "legal-1", name: "LegalBot", role: "Legal Counsel", description: "Compliance expert" },
-      { id: "legal-2", name: "ContractBot", role: "Contract Specialist", description: "Agreement drafting expert" },
-      { id: "legal-3", name: "ComplianceBot", role: "Compliance Officer", description: "Regulatory compliance" }
-    ]
+// Tag colors mapping
+const tagColors = {
+  "Technology": "bg-blue-500",
+  "Product": "bg-purple-500",
+  "Marketing": "bg-green-500",
+  "Sales": "bg-red-500",
+  "Growth": "bg-orange-500"
+};
+
+// API call function  
+const fetchAgents = async (): Promise<Agent[]> => {
+  console.log('🔄 Attempting to fetch agents from API...');
+  
+  // Try mockable.io directly with both HTTPS and HTTP options
+  let response;
+  try {
+    // Try HTTPS first
+    console.log('🔄 Trying HTTPS mockable.io endpoint...');
+    response = await fetch('http://demo2018916.mockable.io/api/agents', {
+      headers: { 'accept': '*/*' },
+      mode: 'cors' // Explicitly request CORS mode
+    });
+    
+    console.log('✅ HTTPS API Response status:', response.status);
+    
+    // If HTTPS fails with a non-OK status, try HTTP
+    if (!response.ok) {
+      console.log('⚠️ HTTPS request failed with status:', response.status);
+      console.log('🔄 Trying HTTP mockable.io endpoint...');
+      
+      response = await fetch('http://demo2018916.mockable.io/api/agents', {
+        headers: { 'accept': '*/*' },
+        mode: 'cors'
+      });
+      
+      console.log('✅ HTTP API Response status:', response.status);
+    }
+    const data = await response.json();
+    console.log('📊 API Response data:', data);
+    
+    if (Array.isArray(data)) {
+      console.log(`🎯 Found ${data.length} agents`);
+      return data;
+    } else if (data && typeof data === 'object') {
+      console.log('📦 Single agent returned, wrapping in array');
+      return [data];
+    } else {
+      console.warn('⚠️ Unexpected data format:', typeof data);
+      return [];
+    }
+  } catch (error) {
+    console.error('💥 Failed to fetch agents:', error);
+    console.error('🔧 This might be a CORS issue. The API may need to allow cross-origin requests.');
+    
+    // Fallback mock data for demonstration (keeping API integration intact)
+    console.log('🔄 Using fallback mock data for demonstration...');
+    return [
+      {
+        id: "1",
+        role: "Product Manager",
+        description: "Specializes in product strategy, roadmapping, and user experience optimization.",
+        designation: "Senior Product Manager",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Communication, Leadership",
+        displayName: "Sarah Chen",
+        avatarUrl: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+        tag: "Product"
+      },
+      {
+        id: "2",
+        role: "Software Engineer",
+        description: "Full-stack developer with expertise in React, Node.js, and cloud architecture.",
+        designation: "Senior Software Engineer",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Problem Solving, Collaboration",
+        displayName: "Alex Rodriguez",
+        avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+        tag: "Technology"
+      },
+      {
+        id: "3",
+        role: "Marketing Strategist",
+        description: "Digital marketing expert focusing on growth hacking and brand positioning.",
+        designation: "Marketing Director",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Creativity, Analytics",
+        displayName: "Jessica Kim",
+        avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+        tag: "Marketing"
+      },
+      {
+        id: "4",
+        role: "Data Scientist",
+        description: "Machine learning specialist with expertise in predictive analytics and AI.",
+        designation: "Senior Data Scientist",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Analytical Thinking, Innovation",
+        displayName: "David Park",
+        avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        tag: "Technology"
+      },
+      {
+        id: "5",
+        role: "Sales Manager",
+        description: "B2B sales expert with focus on enterprise client relationships and revenue growth.",
+        designation: "Regional Sales Manager",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Negotiation, Relationship Building",
+        displayName: "Emma Thompson",
+        avatarUrl: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=150&h=150&fit=crop&crop=face",
+        tag: "Sales"
+      },
+      {
+        id: "6",
+        role: "UX Designer",
+        description: "User experience designer specializing in mobile apps and accessibility.",
+        designation: "Senior UX Designer",
+        functionalPrompt: "",
+        modulePrompt: "",
+        softSkills: "Empathy, Design Thinking",
+        displayName: "Michael Wong",
+        avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+        tag: "Product"
+      }
+    ];
   }
 };
 
@@ -103,6 +174,7 @@ const rooms = [
   { id: "strategy", name: "Strategy Planning", icon: "🎯", category: "planning" },
 ];
 
+// Force refresh - departments removed and replaced with API agents
 export function NavigationSidebar({ 
   activeRoom, 
   onRoomChange, 
@@ -111,35 +183,91 @@ export function NavigationSidebar({
   participants,
   onAddParticipant 
 }: NavigationSidebarProps) {
-  const [expandedDepartments, setExpandedDepartments] = useState<string[]>(["Tech"]);
-  const [editingBots, setEditingBots] = useState<{[key: string]: {name: string, description: string}}>({});
+  const [expandedTags, setExpandedTags] = useState<string[]>([]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleDepartment = (dept: string) => {
-    setExpandedDepartments(prev => 
-      prev.includes(dept) 
-        ? prev.filter(d => d !== dept)
-        : [...prev, dept]
+
+
+  useEffect(() => {
+    loadAgents();
+  }, []);
+
+  // Group agents by tag with sorting
+  const groupAgentsByTag = (agents: Agent[]) => {
+    const grouped = agents.reduce((acc, agent) => {
+      if (!acc[agent.tag]) {
+        acc[agent.tag] = [];
+      }
+      acc[agent.tag].push(agent);
+      return acc;
+    }, {} as Record<string, Agent[]>);
+  
+    // Sort tags alphabetically and agents within each tag by displayName
+    const sortedGrouped: Record<string, Agent[]> = {};
+    Object.keys(grouped)
+      .sort()
+      .forEach(tag => {
+        sortedGrouped[tag] = grouped[tag].sort((a, b) => 
+          a.displayName.localeCompare(b.displayName)
+        );
+      });
+  
+    return sortedGrouped;
+  };
+
+  const loadAgents = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    const agentData = await fetchAgents();
+    setAgents(agentData);
+
+    // ✅ now this works
+    if (agentData.length > 0) {
+      const firstTag = Object.keys(groupAgentsByTag(agentData)).sort()[0];
+      if (firstTag) {
+        setExpandedTags([firstTag]);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch agents:', error);
+    setError('Couldn\'t load agents.');
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const agentsByTag = groupAgentsByTag(agents);
+
+  const toggleTag = (tag: string) => {
+    setExpandedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
     );
   };
 
-  const handleEditBot = (botId: string, field: 'name' | 'description', value: string) => {
-    setEditingBots(prev => ({
-      ...prev,
-      [botId]: {
-        ...prev[botId],
-        [field]: value
-      }
-    }));
-  };
-
-  const handleDragStart = (e: React.DragEvent, bot: any, department: string) => {
-    const botData = {
-      ...bot,
-      department,
-      name: editingBots[bot.id]?.name || bot.name,
-      description: editingBots[bot.id]?.description || bot.description
+  const handleDragStart = (e: React.DragEvent, agent: Agent) => {
+    const botData: Bot = {
+      id: agent.id,
+      name: agent.displayName,
+      role: agent.designation,
+      department: agent.tag,
+      description: agent.description
     };
     e.dataTransfer.setData('application/json', JSON.stringify(botData));
+  };
+
+  const handleAgentClick = (agent: Agent) => {
+    // Emit agent selection if needed
+    console.log('Agent selected:', { 
+      id: agent.id, 
+      tag: agent.tag, 
+      displayName: agent.displayName, 
+      designation: agent.designation 
+    });
   };
 
   if (collapsed) {
@@ -187,7 +315,7 @@ export function NavigationSidebar({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1" style={{ scrollbarWidth: "thin" }}>
         <div className="p-4 space-y-6">
           {/* Current Participants */}
           <div>
@@ -217,69 +345,91 @@ export function NavigationSidebar({
             </div>
           </div>
 
-          {/* Available Bots by Department */}
+          {/* Available AI Agents */}
           <div>
             <h3 className="text-sm font-medium text-sidebar-foreground mb-3">
               Available AI Agents
             </h3>
-            <div className="space-y-3">
-              {Object.entries(departments).map(([deptKey, dept]) => (
-                <div key={deptKey} className="space-y-2">
-                  <button
-                    onClick={() => toggleDepartment(deptKey)}
-                    className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left"
-                  >
-                    <div className={cn("h-3 w-3 rounded-sm", dept.color)} />
-                    <span className="text-sm font-medium text-sidebar-foreground flex-1">
-                      {dept.name}
-                    </span>
-                    <ChevronDown className={cn(
-                      "h-3 w-3 text-muted-foreground transition-transform",
-                      expandedDepartments.includes(deptKey) && "rotate-180"
-                    )} />
-                  </button>
-                  
-                  {expandedDepartments.includes(deptKey) && (
-                    <div className="ml-4 space-y-2">
-                      {dept.bots.map((bot) => (
-                        <div
-                          key={bot.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, bot, deptKey)}
-                          className="group flex items-start gap-3 p-3 rounded-lg border border-sidebar-border hover:border-primary/50 bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm"
-                        >
-                          <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary" />
-                          <div className="flex-1 min-w-0 space-y-2">
-                            <input
-                              type="text"
-                              value={editingBots[bot.id]?.name || bot.name}
-                              onChange={(e) => handleEditBot(bot.id, 'name', e.target.value)}
-                              className="w-full text-sm font-medium bg-transparent border-none outline-none text-card-foreground hover:bg-muted/50 rounded px-1 py-0.5"
-                              placeholder="Bot name"
-                            />
-                            <input
-                              type="text"
-                              value={editingBots[bot.id]?.description || bot.description}
-                              onChange={(e) => handleEditBot(bot.id, 'description', e.target.value)}
-                              className="w-full text-xs text-muted-foreground bg-transparent border-none outline-none hover:bg-muted/50 rounded px-1 py-0.5"
-                              placeholder="Bot description"
-                            />
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                {bot.role}
-                              </span>
-                              <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                {deptKey}
-                              </span>
+            {loading ? (
+              <div className="flex items-center justify-center p-4">
+                <div className="text-sm text-muted-foreground">Loading agents...</div>
+              </div>
+            ) : error ? (
+              <div className="text-center p-4 space-y-2">
+                <p className="text-sm text-muted-foreground">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadAgents}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry
+                </Button>
+              </div>
+            ) : agents.length === 0 ? (
+              <div className="text-sm text-muted-foreground text-center p-4">
+                No available AI agents.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {Object.entries(agentsByTag).map(([tag, tagAgents]) => (
+                  <div key={tag} className="space-y-2">
+                    <button
+                      onClick={() => toggleTag(tag)}
+                      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left"
+                    >
+                      <div className={cn("h-3 w-3 rounded-sm", tagColors[tag as keyof typeof tagColors] || "bg-gray-500")} />
+                      <span className="text-sm font-medium text-sidebar-foreground flex-1">
+                        {tag} ({tagAgents.length})
+                      </span>
+                      <ChevronDown className={cn(
+                        "h-3 w-3 text-muted-foreground transition-transform",
+                        expandedTags.includes(tag) && "rotate-180"
+                      )} />
+                    </button>
+                    
+                    {expandedTags.includes(tag) && (
+                      <div className="ml-4 space-y-2">
+                        {tagAgents.map((agent) => (
+                          <div
+                            key={agent.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, agent)}
+                            onClick={() => handleAgentClick(agent)}
+                            className="group flex items-start gap-3 p-3 rounded-lg border border-sidebar-border hover:border-primary/50 bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm"
+                          >
+                            <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary flex-shrink-0" />
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                              <AvatarImage 
+                                src={agent.avatarUrl} 
+                                alt={agent.displayName}
+                              />
+                              <AvatarFallback className="text-xs font-medium">
+                                {agent.displayName.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium text-card-foreground truncate">
+                                  {agent.displayName}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  · {agent.designation}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {agent.description}
+                              </p>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Rooms */}
@@ -307,6 +457,23 @@ export function NavigationSidebar({
           </div>
         </div>
       </ScrollArea>
+
+      {/* User Profile Section */}
+      <div className="p-4 border-t border-sidebar-border bg-sidebar">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
+              A
+            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-sidebar rounded-full"></div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm text-sidebar-foreground truncate">Anshika</p>
+            <p className="text-xs text-muted-foreground">Host</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

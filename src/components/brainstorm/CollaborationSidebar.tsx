@@ -42,8 +42,8 @@ export function CollaborationSidebar({
   const [tempParticipantName, setTempParticipantName] = useState("");
 
   const pinnedIdeas = [
-    { id: "1", content: "Interactive onboarding with progressive disclosure", author: "Sarah Chen", votes: 8 },
-    { id: "2", content: "Gamification elements with achievement badges", author: "Mike Rodriguez", votes: 12 },
+    { id: "1", content: "Interactive onboarding with progressive disclosure", author: "Siddarth", votes: 8 },
+    { id: "2", content: "Gamification elements with achievement badges", author: "Akash", votes: 12 },
     { id: "3", content: "Micro-animations for delightful user experience", author: "AI Companion", votes: 6 },
   ];
 
@@ -108,7 +108,7 @@ export function CollaborationSidebar({
         <h2 className="font-semibold text-sidebar-foreground">Session Details</h2>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1" style={{ scrollbarWidth: "thin" }}>
         <div className="p-4 space-y-6">
           {/* Current Topic */}
           <div>
@@ -167,21 +167,25 @@ export function CollaborationSidebar({
           <div>
             <h3 className="text-sm font-medium text-sidebar-foreground mb-3 flex items-center gap-2">
               <Users className="h-4 w-4" />
-              Team Members ({participants.length})
+              Active Participants ({participants.length})
             </h3>
             <div
               onDrop={handleDropParticipant}
               onDragOver={handleDragOver}
               className="min-h-[100px] p-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
             >
-              <div className="space-y-2">
-                {participants.map((participant) => (
+                <ScrollArea className="max-h-64" style={{ scrollbarWidth: "thin" }}>
+                <div className="space-y-2 pr-2">
+                  {participants.map((participant) => (
                   <div
                     key={participant.id}
                     className="group flex items-center gap-3 p-2 rounded-lg bg-card border border-border hover:border-primary/50 transition-colors"
                   >
-                    <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
-                      {participant.name.slice(0, 2).toUpperCase()}
+                    <div className="relative">
+                      <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-medium">
+                        {participant.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 border-2 border-card rounded-full"></div>
                     </div>
                     <div className="flex-1 min-w-0">
                       {editingParticipant === participant.id ? (
@@ -233,20 +237,21 @@ export function CollaborationSidebar({
                       )}
                     </div>
                   </div>
-                ))}
-                
-                {participants.length === 0 && (
-                  <div className="text-center py-6">
-                    <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground">
-                      Drag AI agents from the left panel
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Build your dream team!
-                    </p>
-                  </div>
-                )}
-              </div>
+                  ))}
+                  
+                  {participants.length === 0 && (
+                    <div className="text-center py-6">
+                      <Users className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        Drag AI agents from the left panel
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Build your dream team!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
             </div>
           </div>
 
