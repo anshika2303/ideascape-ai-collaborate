@@ -116,6 +116,23 @@ export function ChatArea({ roomId, topic }: ChatAreaProps) {
     }
   };
 
+  const handleDropParticipant = (e: React.DragEvent) => {
+    e.preventDefault();
+    try {
+      const botData = JSON.parse(e.dataTransfer.getData('application/json'));
+      if (botData && !messages.find(m => m.author === botData.name)) {
+        // Add bot to participants through custom event
+        window.dispatchEvent(new CustomEvent('addParticipant', { detail: botData }));
+      }
+    } catch (error) {
+      console.error('Error parsing dropped data:', error);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       {/* Topic Header */}
@@ -134,8 +151,12 @@ export function ChatArea({ roomId, topic }: ChatAreaProps) {
       )}
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full">
+      <div 
+        className="flex-1 overflow-hidden"
+        onDrop={handleDropParticipant}
+        onDragOver={handleDragOver}
+      >
+        <ScrollArea className="h-full" style={{ scrollbarWidth: "thin" }}>
           <div className="p-6 space-y-4">
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
