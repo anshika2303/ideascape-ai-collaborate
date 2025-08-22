@@ -53,14 +53,12 @@ const fetchAgents = async (): Promise<Agent[]> => {
     let response;
     try {
       response = await fetch('http://demo2018916.mockable.io/api/agents', {
-        headers: { 'accept': '*/*' },
-        mode: 'cors'
+        headers: { 'accept': '*/*' }
       });
     } catch (httpsError) {
       console.log('❌ HTTPS failed, trying HTTP:', httpsError);
       response = await fetch('http://demo2018916.mockable.io/api/agents', {
         headers: { 'accept': '*/*' },
-        mode: 'cors'
       });
     }
     
