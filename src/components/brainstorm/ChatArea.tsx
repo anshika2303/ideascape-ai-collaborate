@@ -151,11 +151,7 @@ export function ChatArea({ roomId, topic }: ChatAreaProps) {
       )}
 
       {/* Messages Area */}
-      <div 
-        className="flex-1 overflow-hidden"
-        onDrop={handleDropParticipant}
-        onDragOver={handleDragOver}
-      >
+      <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full" style={{ scrollbarWidth: "thin" }}>
           <div className="p-6 space-y-4">
             {messages.map((msg) => (
