@@ -10,7 +10,7 @@ export function BrainstormLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Product Roadmap Q1 2024 - Feature Prioritization");
   const [participants, setParticipants] = useState([
-    { id: "1", name: "Sarah Chen", role: "human", department: "Product" },
+    { id: "1", name: "Anshika", role: "human", department: "Product" },
     { id: "2", name: "Mike Rodriguez", role: "human", department: "Tech" },
   ]);
 

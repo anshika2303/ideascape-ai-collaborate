@@ -54,9 +54,10 @@ const departments = {
     name: "Growth",
     color: "bg-orange-500",
     bots: [
-      { id: "growth-1", name: "GrowthBot", role: "Growth Hacker", description: "User acquisition expert" },
-      { id: "growth-2", name: "AnalyticsBot", role: "Data Analyst", description: "Performance metrics expert" },
-      { id: "growth-3", name: "ConversionBot", role: "CRO Specialist", description: "Conversion optimization" }
+      { id: "growth-1", name: "Anshika", role: "Growth Strategist", description: "User acquisition and growth expert" },
+      { id: "growth-2", name: "GrowthBot", role: "Growth Hacker", description: "User acquisition expert" },
+      { id: "growth-3", name: "AnalyticsBot", role: "Data Analyst", description: "Performance metrics expert" },
+      { id: "growth-4", name: "ConversionBot", role: "CRO Specialist", description: "Conversion optimization" }
     ]
   },
   "Sales": {
@@ -93,6 +94,14 @@ const departments = {
       { id: "legal-1", name: "LegalBot", role: "Legal Counsel", description: "Compliance expert" },
       { id: "legal-2", name: "ContractBot", role: "Contract Specialist", description: "Agreement drafting expert" },
       { id: "legal-3", name: "ComplianceBot", role: "Compliance Officer", description: "Regulatory compliance" }
+    ]
+  },
+  "Business": {
+    name: "Business Heads",
+    color: "bg-rose-500",
+    bots: [
+      { id: "business-1", name: "Rohan Mathur", role: "Business Head", description: "Jeevansathi leadership expert" },
+      { id: "business-2", name: "Hitesh Oberoi", role: "CEO", description: "InfoEdge strategic vision" }
     ]
   }
 };
