@@ -34,22 +34,6 @@ interface NavigationSidebarProps {
   onAddParticipant: (bot: Bot) => void;
 }
 
-// Mock API function for fetching agents
-const mockApiAgents: Agent[] = [
-  {
-    id: "68a8524016894d320381d91a",
-    role: "EXPERT",
-    description: "Full stack tech architecture expert",
-    designation: "Tech Head",
-    functionalPrompt: "Technology leader specializing in full-stack architecture, microservices, cloud platforms, and system scalability. Guides teams in building robust, efficient, and secure systems.",
-    modulePrompt: "Expert in designing distributed systems, optimizing backend services, implementing DevOps pipelines, and advising on emerging technologies like AI integration and blockchain use cases.",
-    softSkills: "Collaborative, clear communicator, mentorship-oriented, problem-solving mindset, ability to balance innovation with practicality.",
-    displayName: "Rishi Gupta",
-    avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOGZpFZKQVdkcFBqhV0apckEr6CQk4s6bB_Q&s",
-    tag: "Technology"
-  }
-];
-
 // Tag colors mapping
 const tagColors = {
   "Technology": "bg-blue-500",
@@ -59,11 +43,25 @@ const tagColors = {
   "Growth": "bg-orange-500"
 };
 
-// Mock API call function
+// API call function
 const fetchAgents = async (): Promise<Agent[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return mockApiAgents;
+  try {
+    const response = await fetch('http://demo2018916.mockable.io/api/agents', {
+      headers: {
+        'accept': '*/*'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return Array.isArray(data) ? data : [data];
+  } catch (error) {
+    console.error('Failed to fetch agents:', error);
+    return [];
+  }
 };
 
 const rooms = [
