@@ -12,6 +12,7 @@ interface Message {
   content: string;
   timestamp: string;
   reactions: Array<{ emoji: string; count: number }>;
+  isTyping?: boolean; // Added for typing indicators
 }
 
 interface MessageBubbleProps {
@@ -105,14 +106,22 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             ? `${roleStyles.bg} border ${roleStyles.border}`
             : "bg-card border border-border"
         )}>
-          <p className={cn(
-            "text-sm leading-relaxed whitespace-pre-wrap",
-            isCurrentUser 
-              ? "text-primary-foreground"
-              : "text-foreground"
-          )}>
-            {message.content}
-          </p>
+          {message.isTyping ? (
+            <div className="flex space-x-2 items-center py-2">
+              <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "0ms" }} />
+              <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "300ms" }} />
+              <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "600ms" }} />
+            </div>
+          ) : (
+            <p className={cn(
+              "text-sm leading-relaxed whitespace-pre-wrap",
+              isCurrentUser 
+                ? "text-primary-foreground"
+                : "text-foreground"
+            )}>
+              {message.content}
+            </p>
+          )}
 
           {/* Message Actions - Show on Hover */}
           <div className={cn(
