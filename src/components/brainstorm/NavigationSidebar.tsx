@@ -110,27 +110,7 @@ export function NavigationSidebar({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadAgents = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const agentData = await fetchAgents();
-      setAgents(agentData);
-      
-      // Auto-expand first tag if agents are loaded
-      if (agentData.length > 0) {
-        const firstTag = Object.keys(groupAgentsByTag(agentData)).sort()[0];
-        if (firstTag) {
-          setExpandedTags([firstTag]);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to fetch agents:', error);
-      setError('Couldn\'t load agents.');
-    } finally {
-      setLoading(false);
-    }
-  };
+
 
   useEffect(() => {
     loadAgents();
@@ -145,7 +125,7 @@ export function NavigationSidebar({
       acc[agent.tag].push(agent);
       return acc;
     }, {} as Record<string, Agent[]>);
-
+  
     // Sort tags alphabetically and agents within each tag by displayName
     const sortedGrouped: Record<string, Agent[]> = {};
     Object.keys(grouped)
@@ -155,9 +135,31 @@ export function NavigationSidebar({
           a.displayName.localeCompare(b.displayName)
         );
       });
-
+  
     return sortedGrouped;
   };
+
+  const loadAgents = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    const agentData = await fetchAgents();
+    setAgents(agentData);
+
+    // ✅ now this works
+    if (agentData.length > 0) {
+      const firstTag = Object.keys(groupAgentsByTag(agentData)).sort()[0];
+      if (firstTag) {
+        setExpandedTags([firstTag]);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch agents:', error);
+    setError('Couldn\'t load agents.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const agentsByTag = groupAgentsByTag(agents);
 
