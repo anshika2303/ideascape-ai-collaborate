@@ -35,7 +35,7 @@ const mockMessages = [
   {
     id: "3",
     type: "human" as const, 
-    author: "Mike Rodriguez",
+    author: "Akash",
     avatar: "MR",
     content: "Love the progressive disclosure idea! We could also add gamification elements - maybe a progress bar or achievement badges?",
     timestamp: "10:34 AM",

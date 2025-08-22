@@ -42,8 +42,8 @@ export function CollaborationSidebar({
   const [tempParticipantName, setTempParticipantName] = useState("");
 
   const pinnedIdeas = [
-    { id: "1", content: "Interactive onboarding with progressive disclosure", author: "Sarah Chen", votes: 8 },
-    { id: "2", content: "Gamification elements with achievement badges", author: "Mike Rodriguez", votes: 12 },
+    { id: "1", content: "Interactive onboarding with progressive disclosure", author: "Siddarth", votes: 8 },
+    { id: "2", content: "Gamification elements with achievement badges", author: "Akash", votes: 12 },
     { id: "3", content: "Micro-animations for delightful user experience", author: "AI Companion", votes: 6 },
   ];
 
