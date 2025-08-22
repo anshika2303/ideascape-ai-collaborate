@@ -4,26 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
-interface Bot {
-  id: string;
-  name: string;
-  role: string;
-  department: string;
-  description?: string;
-}
-
-interface Agent {
-  id: string;
-  role: "MODERATOR" | "COMPANION" | "EXPERT" | "VISIONARY" | "CELEBRITY" | "CRITIC" | "CHEERLEADER";
-  description: string;
-  designation: string;
-  functionalPrompt: string;
-  modulePrompt: string;
-  softSkills: string;
-  displayName: string;
-  avatarUrl: string;
-  tag: "Technology" | "Product" | "Marketing" | "Sales" | "Growth";
-}
 
 interface NavigationSidebarProps {
   activeRoom: string;
