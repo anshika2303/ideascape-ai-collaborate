@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Users, GripVertical, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X, Users, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 interface Bot {
@@ -104,35 +105,61 @@ export function NavigationSidebar({
   participants,
   onAddParticipant 
 }: NavigationSidebarProps) {
-  const [expandedTags, setExpandedTags] = useState<string[]>(["Technology"]);
-  const [editingAgents, setEditingAgents] = useState<{[key: string]: {displayName: string, description: string}}>({});
+  const [expandedTags, setExpandedTags] = useState<string[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadAgents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const agentData = await fetchAgents();
+      setAgents(agentData);
+      
+      // Auto-expand first tag if agents are loaded
+      if (agentData.length > 0) {
+        const firstTag = Object.keys(groupAgentsByTag(agentData)).sort()[0];
+        if (firstTag) {
+          setExpandedTags([firstTag]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch agents:', error);
+      setError('Couldn\'t load agents.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadAgents = async () => {
-      try {
-        setLoading(true);
-        const agentData = await fetchAgents();
-        setAgents(agentData);
-      } catch (error) {
-        console.error('Failed to fetch agents:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadAgents();
   }, []);
 
-  // Group agents by tag
-  const agentsByTag = agents.reduce((acc, agent) => {
-    if (!acc[agent.tag]) {
-      acc[agent.tag] = [];
-    }
-    acc[agent.tag].push(agent);
-    return acc;
-  }, {} as Record<string, Agent[]>);
+  // Group agents by tag with sorting
+  const groupAgentsByTag = (agents: Agent[]) => {
+    const grouped = agents.reduce((acc, agent) => {
+      if (!acc[agent.tag]) {
+        acc[agent.tag] = [];
+      }
+      acc[agent.tag].push(agent);
+      return acc;
+    }, {} as Record<string, Agent[]>);
+
+    // Sort tags alphabetically and agents within each tag by displayName
+    const sortedGrouped: Record<string, Agent[]> = {};
+    Object.keys(grouped)
+      .sort()
+      .forEach(tag => {
+        sortedGrouped[tag] = grouped[tag].sort((a, b) => 
+          a.displayName.localeCompare(b.displayName)
+        );
+      });
+
+    return sortedGrouped;
+  };
+
+  const agentsByTag = groupAgentsByTag(agents);
 
   const toggleTag = (tag: string) => {
     setExpandedTags(prev => 
@@ -142,25 +169,25 @@ export function NavigationSidebar({
     );
   };
 
-  const handleEditAgent = (agentId: string, field: 'displayName' | 'description', value: string) => {
-    setEditingAgents(prev => ({
-      ...prev,
-      [agentId]: {
-        ...prev[agentId],
-        [field]: value
-      }
-    }));
-  };
-
   const handleDragStart = (e: React.DragEvent, agent: Agent) => {
     const botData: Bot = {
       id: agent.id,
-      name: editingAgents[agent.id]?.displayName || agent.displayName,
+      name: agent.displayName,
       role: agent.designation,
       department: agent.tag,
-      description: editingAgents[agent.id]?.description || agent.description
+      description: agent.description
     };
     e.dataTransfer.setData('application/json', JSON.stringify(botData));
+  };
+
+  const handleAgentClick = (agent: Agent) => {
+    // Emit agent selection if needed
+    console.log('Agent selected:', { 
+      id: agent.id, 
+      tag: agent.tag, 
+      displayName: agent.displayName, 
+      designation: agent.designation 
+    });
   };
 
   if (collapsed) {
@@ -244,11 +271,25 @@ export function NavigationSidebar({
               Available AI Agents
             </h3>
             {loading ? (
-              <div className="text-sm text-muted-foreground">Loading agents...</div>
+              <div className="flex items-center justify-center p-4">
+                <div className="text-sm text-muted-foreground">Loading agents...</div>
+              </div>
+            ) : error ? (
+              <div className="text-center p-4 space-y-2">
+                <p className="text-sm text-muted-foreground">{error}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadAgents}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  Retry
+                </Button>
+              </div>
             ) : agents.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                <p>No agents available.</p>
-                <p className="text-xs mt-1">Check console for API errors.</p>
+              <div className="text-sm text-muted-foreground text-center p-4">
+                No available AI agents.
               </div>
             ) : (
               <div className="space-y-3">
@@ -258,9 +299,9 @@ export function NavigationSidebar({
                       onClick={() => toggleTag(tag)}
                       className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-left"
                     >
-                      <div className={cn("h-3 w-3 rounded-sm", tagColors[tag as keyof typeof tagColors])} />
+                      <div className={cn("h-3 w-3 rounded-sm", tagColors[tag as keyof typeof tagColors] || "bg-gray-500")} />
                       <span className="text-sm font-medium text-sidebar-foreground flex-1">
-                        {tag}
+                        {tag} ({tagAgents.length})
                       </span>
                       <ChevronDown className={cn(
                         "h-3 w-3 text-muted-foreground transition-transform",
@@ -275,32 +316,31 @@ export function NavigationSidebar({
                             key={agent.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, agent)}
+                            onClick={() => handleAgentClick(agent)}
                             className="group flex items-start gap-3 p-3 rounded-lg border border-sidebar-border hover:border-primary/50 bg-card cursor-grab active:cursor-grabbing transition-all hover:shadow-sm"
                           >
-                            <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary" />
-                            <div className="flex-1 min-w-0 space-y-2">
-                              <input
-                                type="text"
-                                value={editingAgents[agent.id]?.displayName || agent.displayName}
-                                onChange={(e) => handleEditAgent(agent.id, 'displayName', e.target.value)}
-                                className="w-full text-sm font-medium bg-transparent border-none outline-none text-card-foreground hover:bg-muted/50 rounded px-1 py-0.5"
-                                placeholder="Agent name"
+                            <GripVertical className="h-4 w-4 text-muted-foreground mt-0.5 group-hover:text-primary flex-shrink-0" />
+                            <Avatar className="h-10 w-10 flex-shrink-0">
+                              <AvatarImage 
+                                src={agent.avatarUrl} 
+                                alt={agent.displayName}
                               />
-                              <input
-                                type="text"
-                                value={editingAgents[agent.id]?.description || agent.description}
-                                onChange={(e) => handleEditAgent(agent.id, 'description', e.target.value)}
-                                className="w-full text-xs text-muted-foreground bg-transparent border-none outline-none hover:bg-muted/50 rounded px-1 py-0.5"
-                                placeholder="Agent description"
-                              />
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">
-                                  {agent.designation}
+                              <AvatarFallback className="text-xs font-medium">
+                                {agent.displayName.slice(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-medium text-card-foreground truncate">
+                                  {agent.displayName}
                                 </span>
-                                <span className="text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
-                                  {agent.role}
+                                <span className="text-xs text-muted-foreground">
+                                  · {agent.designation}
                                 </span>
                               </div>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                {agent.description}
+                              </p>
                             </div>
                           </div>
                         ))}
