@@ -72,6 +72,7 @@ const rooms = [
   { id: "strategy", name: "Strategy Planning", icon: "🎯", category: "planning" },
 ];
 
+// Force refresh - departments removed and replaced with API agents
 export function NavigationSidebar({ 
   activeRoom, 
   onRoomChange, 
