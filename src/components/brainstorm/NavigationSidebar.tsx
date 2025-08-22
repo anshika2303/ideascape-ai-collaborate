@@ -4,6 +4,26 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+interface Bot {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  description: string;
+}
+
+interface Agent {
+  id: string;
+  role: string;
+  description: string;
+  designation: string;
+  functionalPrompt: string;
+  modulePrompt: string;
+  softSkills: string;
+  displayName: string;
+  avatarUrl: string;
+  tag: string;
+}
 
 interface NavigationSidebarProps {
   activeRoom: string;
@@ -23,24 +43,8 @@ const tagColors = {
   "Growth": "bg-orange-500"
 };
 
-// API call function with fallback
+// API call function
 const fetchAgents = async (): Promise<Agent[]> => {
-  // Fallback mock data
-  const fallbackAgents: Agent[] = [
-    {
-      id: "68a8524016894d320381d91a",
-      role: "EXPERT",
-      description: "Full stack tech architecture expert",
-      designation: "Tech Head",
-      functionalPrompt: "Technology leader specializing in full-stack architecture",
-      modulePrompt: "Expert in designing distributed systems",
-      softSkills: "Collaborative, clear communicator",
-      displayName: "Rishi G",
-      avatarUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOGZpFZKQVdkcFBqhV0apckEr6CQk4s6bB_Q&s",
-      tag: "Technology"
-    }
-  ];
-
   try {
     console.log('Attempting to fetch agents from API...');
     const response = await fetch('http://demo2018916.mockable.io/api/agents', {
@@ -59,9 +63,8 @@ const fetchAgents = async (): Promise<Agent[]> => {
     console.log('API Response data:', data);
     return Array.isArray(data) ? data : [data];
   } catch (error) {
-    console.error('Failed to fetch agents, using fallback:', error);
-    // Return fallback data if API fails
-    return fallbackAgents;
+    console.error('Failed to fetch agents:', error);
+    return [];
   }
 };
 

@@ -10,8 +10,8 @@ export function BrainstormLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Product Roadmap Q1 2024 - Feature Prioritization");
   const [participants, setParticipants] = useState([
-    { id: "2", name: "Akash", role: "human", department: "Tech" },
-    { id: "1", name: "Anshika", role: "human", department: "Growth"}
+    { id: "2", name: "Akash", role: "human", department: "Tech", description: "Human participant" },
+    { id: "1", name: "Anshika", role: "human", department: "Growth", description: "Human participant"}
   ]);
 
   // Listen for drag-and-drop events
