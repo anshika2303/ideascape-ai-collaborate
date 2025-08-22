@@ -108,8 +108,8 @@ export function CollaborationSidebar({
         <h2 className="font-semibold text-sidebar-foreground">Session Details</h2>
       </div>
 
-      <ScrollArea className="flex-1" style={{ scrollbarWidth: "thin" }}>
-        <div className="p-4 space-y-6">
+      <ScrollArea className="flex-1" type="always">
+        <div className="p-4 space-y-6 pr-2">
           {/* Current Topic */}
           <div>
             <div className="flex items-center justify-between mb-3">
@@ -174,7 +174,7 @@ export function CollaborationSidebar({
               onDragOver={handleDragOver}
               className="min-h-[100px] p-3 rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
             >
-                <ScrollArea className="max-h-64" style={{ scrollbarWidth: "thin" }}>
+                <ScrollArea className="max-h-64" type="always">
                 <div className="space-y-2 pr-2">
                   {participants.map((participant) => (
                   <div

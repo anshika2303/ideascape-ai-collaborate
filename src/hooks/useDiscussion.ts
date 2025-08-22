@@ -28,6 +28,8 @@ interface UseDiscussionResult {
   error: unknown;
   sendMessage: (content: string) => void;
   refetch: () => void;
+  userId: string;
+  setUserId: (userId: string) => void;
 }
 
 /**

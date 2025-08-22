@@ -315,8 +315,8 @@ export function NavigationSidebar({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1" style={{ scrollbarWidth: "thin" }}>
-        <div className="p-4 space-y-6">
+      <ScrollArea className="flex-1" type="always">
+        <div className="p-4 space-y-6 pr-2">
           {/* Current Participants */}
           <div>
             <h3 className="text-sm font-medium text-sidebar-foreground mb-3 flex items-center gap-2">

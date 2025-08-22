@@ -142,8 +142,8 @@ export function ChatArea({ roomId, topic, discussionId = "68a8b4104f19bb16649cdf
 
       {/* Messages Area */}
       <div className="flex-1 overflow-hidden">
-        <ScrollArea className="h-full pr-4" style={{ scrollbarWidth: "thin" }} type="always">
-          <div className="p-6 space-y-4">
+        <ScrollArea className="h-full" type="always">
+          <div className="p-6 space-y-4 pr-2">
             {isLoading ? (
               <div className="flex justify-center py-8">
                 <div className="animate-pulse text-muted-foreground">Loading messages...</div>
