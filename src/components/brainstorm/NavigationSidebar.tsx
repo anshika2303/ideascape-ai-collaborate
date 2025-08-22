@@ -52,7 +52,7 @@ const fetchAgents = async (): Promise<Agent[]> => {
     // Try HTTPS first, then HTTP as fallback
     let response;
     try {
-      response = await fetch('http://demo2018916.mockable.io/api/agents', {
+      response = await fetch('http://10.112.3.240:8080/api/agents', {
         headers: { 'accept': '*/*' }
       });
     } catch (httpsError) {
