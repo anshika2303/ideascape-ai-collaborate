@@ -46,28 +46,32 @@ const tagColors = {
 
 // API call function  
 const fetchAgents = async (): Promise<Agent[]> => {
+  console.log('🔄 Attempting to fetch agents from API...');
+  
+  // Try mockable.io directly with both HTTPS and HTTP options
+  let response;
   try {
-    console.log('🔄 Attempting to fetch agents from API...');
+    // Try HTTPS first
+    console.log('🔄 Trying HTTPS mockable.io endpoint...');
+    response = await fetch('http://demo2018916.mockable.io/api/agents', {
+      headers: { 'accept': '*/*' },
+      mode: 'cors' // Explicitly request CORS mode
+    });
     
-    // Try HTTPS first, then HTTP as fallback
-    let response;
-    try {
-      response = await fetch('http://10.112.3.240:8080/api/agents', {
-        headers: { 'accept': '*/*' }
-      });
-    } catch (httpsError) {
-      console.log('❌ HTTPS failed, trying HTTP:', httpsError);
+    console.log('✅ HTTPS API Response status:', response.status);
+    
+    // If HTTPS fails with a non-OK status, try HTTP
+    if (!response.ok) {
+      console.log('⚠️ HTTPS request failed with status:', response.status);
+      console.log('🔄 Trying HTTP mockable.io endpoint...');
+      
       response = await fetch('http://demo2018916.mockable.io/api/agents', {
         headers: { 'accept': '*/*' },
+        mode: 'cors'
       });
+      
+      console.log('✅ HTTP API Response status:', response.status);
     }
-    
-    console.log('✅ API Response status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
     const data = await response.json();
     console.log('📊 API Response data:', data);
     
