@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquare, Users, Lightbulb, Hash, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ChatArea } from "./ChatArea";
@@ -8,6 +8,24 @@ import { CollaborationSidebar } from "./CollaborationSidebar";
 export function BrainstormLayout() {
   const [activeRoom, setActiveRoom] = useState("general");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState("Product Roadmap Q1 2024 - Feature Prioritization");
+  const [participants, setParticipants] = useState([
+    { id: "1", name: "Sarah Chen", role: "human", department: "Product" },
+    { id: "2", name: "Mike Rodriguez", role: "human", department: "Tech" },
+  ]);
+
+  // Listen for drag-and-drop events
+  useEffect(() => {
+    const handleAddParticipant = (e: any) => {
+      const botData = e.detail;
+      if (botData && !participants.find(p => p.id === botData.id)) {
+        setParticipants(prev => [...prev, { ...botData, id: Date.now().toString() }]);
+      }
+    };
+    
+    window.addEventListener('addParticipant', handleAddParticipant);
+    return () => window.removeEventListener('addParticipant', handleAddParticipant);
+  }, [participants]);
 
   return (
     <div className="h-screen bg-background flex overflow-hidden">
@@ -17,6 +35,8 @@ export function BrainstormLayout() {
         onRoomChange={setActiveRoom}
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        participants={participants}
+        onAddParticipant={(bot) => setParticipants(prev => [...prev, { ...bot, id: Date.now().toString() }])}
       />
 
       {/* Main Chat Area */}
@@ -37,11 +57,18 @@ export function BrainstormLayout() {
           </div>
         </header>
 
-        <ChatArea roomId={activeRoom} />
+        <ChatArea roomId={activeRoom} topic={currentTopic} />
       </div>
 
       {/* Right Collaboration Sidebar */}
-      <CollaborationSidebar />
+      <CollaborationSidebar 
+        participants={participants}
+        topic={currentTopic}
+        onTopicChange={setCurrentTopic}
+        onEditParticipant={(id, updates) => {
+          setParticipants(prev => prev.map(p => p.id === id ? { ...p, ...updates } : p))
+        }}
+      />
     </div>
   );
 }

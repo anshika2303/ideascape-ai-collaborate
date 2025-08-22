@@ -2,11 +2,13 @@ import { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, Smile, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageBubble } from "./MessageBubble";
 import { cn } from "@/lib/utils";
 
 interface ChatAreaProps {
   roomId: string;
+  topic?: string;
 }
 
 // Mock messages data
@@ -61,7 +63,7 @@ const mockMessages = [
   },
 ];
 
-export function ChatArea({ roomId }: ChatAreaProps) {
+export function ChatArea({ roomId, topic }: ChatAreaProps) {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState(mockMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -116,13 +118,30 @@ export function ChatArea({ roomId }: ChatAreaProps) {
 
   return (
     <div className="flex-1 flex flex-col">
+      {/* Topic Header */}
+      {topic && (
+        <div className="border-b border-border bg-card px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <h2 className="text-lg font-semibold text-foreground">
+              {topic}
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Active brainstorming session • {messages.length} messages
+          </p>
+        </div>
+      )}
+
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 message-area">
-        {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-6 space-y-4">
+          {messages.map((msg) => (
+            <MessageBubble key={msg.id} message={msg} />
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
 
       {/* Input Area */}
       <div className="border-t border-border bg-background p-4">
