@@ -9,7 +9,7 @@ export function BrainstormLayout() {
   const [activeRoom, setActiveRoom] = useState("general");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("Product Roadmap Q1 2024 - Feature Prioritization");
-  const [discussionId, setDiscussionId] = useState("68a8b4104f19bb16649cdfb9"); // Default discussion ID
+  const [discussionId, setDiscussionId] = useState("68a8f559ed219d2108e2f487"); // Default discussion ID
   const [participants, setParticipants] = useState([
     { id: "2", name: "Akash", role: "human", department: "Tech", description: "Human participant" },
     { id: "1", name: "Anshika", role: "human", department: "Growth", description: "Human participant"}

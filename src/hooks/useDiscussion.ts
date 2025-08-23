@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import { 
   fetchDiscussion, 
   sendMessage as apiSendMessage, 
@@ -7,6 +8,8 @@ import {
   type DiscussionResponse, 
   type SendMessageResponse 
 } from '@/services/api';
+
+const API_BASE_URL = 'http://localhost:9696/api';
 
 // Define the UI message type
 export interface UIMessage {
@@ -39,11 +42,15 @@ interface UseDiscussionResult {
  */
 export function useDiscussion(
   discussionId?: string,
-  fallbackMessages: UIMessage[] = []
+  fallbackMessages: UIMessage[] = [],
+  autoFetchAfterInactivity: boolean = true
 ): UseDiscussionResult {
   const [messages, setMessages] = useState<UIMessage[]>([]);
   const [discussion, setDiscussion] = useState<DiscussionResponse['discussion'] | null>(null);
-  const [userId, setUserId] = useState<string>("user_123"); // Default userId
+  const [userId, setUserId] = useState<string>("human_user_001"); // Default userId
+  const [lastActivity, setLastActivity] = useState<number>(Date.now());
+  const [inactivityTimer, setInactivityTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
 
   // Fetch discussion data using React Query
   const {
@@ -73,8 +80,99 @@ export function useDiscussion(
     }
   }, [discussionData, discussionId, fallbackMessages]);
 
+  // Auto-fetch response after inactivity
+  useEffect(() => {
+    if (!autoFetchAfterInactivity || !discussionId) return;
+    
+    // Clear any existing timer
+    if (inactivityTimer) {
+      clearTimeout(inactivityTimer);
+    }
+    
+    // Set a new timer if user is not currently typing
+    if (!isTyping) {
+      const timer = setTimeout(() => {
+        // Only fetch if we haven't had activity in the last 5 seconds
+        const currentTime = Date.now();
+        if (currentTime - lastActivity >= 50000) {
+          console.log('User inactive for 5 seconds, auto-fetching response...');
+          // Auto-fetch response from API
+          fetchAutoResponse();
+        }
+      }, 5000);
+      
+      setInactivityTimer(timer);
+    }
+    
+    // Cleanup function
+    return () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+    };
+  }, [lastActivity, isTyping, discussionId, autoFetchAfterInactivity]);
+  
+  // Function to fetch auto-response from API
+  const fetchAutoResponse = async () => {
+    if (!discussionId) return;
+    
+    try {
+      // Show typing indicator
+      const typingIndicatorId = `typing-auto-${Date.now()}`;
+      setMessages(prev => [...prev, {
+        id: typingIndicatorId,
+        type: "ai",
+        author: "AI",
+        avatar: "AI",
+        content: "...", // Typing indicator
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        reactions: [],
+        isTyping: true,
+      }]);
+      
+      // Call API with just the discussionId
+      const response = await axios.post(`${API_BASE_URL}/conversation/message`, {
+        discussionId
+      });
+      
+      // Remove typing indicator and add response
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.id !== typingIndicatorId);
+        
+        if (response.data && response.data.responseMessage) {
+          // Create response message from API
+          const responseMessage: UIMessage = {
+            id: Date.now().toString(),
+            type: "ai",
+            author: response.data.responseAgent?.displayName || "AI",
+            avatar: response.data.responseAgent?.tag?.substring(0, 3) || "AI",
+            role: response.data.responseAgent?.role?.toLowerCase() as "expert" | "moderator" | "companion",
+            content: response.data.responseMessage,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            reactions: [],
+          };
+          
+          return [...filtered, responseMessage];
+        }
+        
+        return filtered;
+      });
+    } catch (error) {
+      console.error('Error auto-fetching response:', error);
+    }
+    
+    // Reset activity timer after auto-fetch
+    setLastActivity(Date.now());
+  };
+
   // Function to send a new message
   const sendMessage = async (content: string) => {
+    // Update last activity timestamp and set typing state
+    setLastActivity(Date.now());
+    setIsTyping(true);
+    
+    // Clear typing state after a short delay
+    setTimeout(() => setIsTyping(false), 100);
     if (!content.trim() || !discussionId) return;
 
     // Create a new message from the user

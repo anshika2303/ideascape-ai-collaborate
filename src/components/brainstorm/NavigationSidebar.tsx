@@ -53,7 +53,7 @@ const fetchAgents = async (): Promise<Agent[]> => {
   try {
     // Try HTTPS first
     console.log('🔄 Trying HTTPS mockable.io endpoint...');
-    response = await fetch('http://demo2018916.mockable.io/api/agents', {
+    response = await fetch('http://localhost:9696/api/agents', {
       headers: { 'accept': '*/*' },
       mode: 'cors' // Explicitly request CORS mode
     });
@@ -65,7 +65,7 @@ const fetchAgents = async (): Promise<Agent[]> => {
       console.log('⚠️ HTTPS request failed with status:', response.status);
       console.log('🔄 Trying HTTP mockable.io endpoint...');
       
-      response = await fetch('http://demo2018916.mockable.io/api/agents', {
+      response = await fetch('http://localhost:9696/api/agents', {
         headers: { 'accept': '*/*' },
         mode: 'cors'
       });

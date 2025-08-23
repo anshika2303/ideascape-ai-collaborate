@@ -67,7 +67,7 @@ const mockMessages: UIMessage[] = [
   },
 ];
 
-export function ChatArea({ roomId, topic, discussionId = "68a8b4104f19bb16649cdfb9" }: ChatAreaProps) {
+export function ChatArea({ roomId, topic, discussionId = "68a8f559ed219d2108e2f487" }: ChatAreaProps) {
   const [message, setMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
